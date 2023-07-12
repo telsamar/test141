@@ -3,8 +3,6 @@ from pyrogram import Client, filters
 from datetime import datetime, timezone
 from docx import Document
 from docx.shared import Inches
-from docx.shared import Pt
-from docx.oxml.ns import nsdecls
 from docx.oxml import parse_xml
 import os
 import re
@@ -15,7 +13,6 @@ from selenium import webdriver
 from selenium.webdriver.chrome.service import Service
 from selenium.webdriver.common.by import By
 from selenium.webdriver.common.action_chains import ActionChains
-from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.chrome.options import Options
 from config import api_id, api_hash
 
@@ -78,7 +75,6 @@ async def main():
                         cell._element.get_or_add_tcPr().append(border_elm)
 
                     print("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
-                    # print(message)
                     message_count += 1
                     doc.add_paragraph(f'Nomer: {message_count}')
                     doc.add_paragraph(f'Text: {message.text}')
@@ -91,7 +87,6 @@ async def main():
                     for cell in cells:
                         border_elm = parse_xml(border_str)
                         cell._element.get_or_add_tcPr().append(border_elm)
-                    
 
                     logger.info(f'Nomer: {message_count}')
                     logger.info(f"Новое сообщение в канале: {message.chat.title}")
