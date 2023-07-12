@@ -7,6 +7,7 @@ from docx.shared import Pt
 from docx.oxml.ns import nsdecls
 from docx.oxml import parse_xml
 import os
+import re
 from webdriver_manager.chrome import ChromeDriverManager
 from selenium import webdriver
 from selenium.webdriver.chrome.service import Service
@@ -16,9 +17,8 @@ from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.chrome.options import Options
 from config import api_id, api_hash
 
-
-with open('dictionary.txt') as f:
-    words = [word.strip().lower() for word in f.readlines()]
+with open('regex_patterns.txt') as f:
+    patterns = [re.compile(pattern.strip()) for pattern in f.readlines()]
 
 with open('channels.txt') as f:
     channels = [channel.strip() for channel in f.readlines()]
@@ -49,8 +49,8 @@ async def main():
             if time_difference_seconds < time_limit*3600:
                 post_link = f"https://t.me/{channel_name}/{message.id}"  
     
-                if ((message.text is not None and message.text.strip() != "" and any(word in message.text.lower() for word in words)) or 
-                    (message.caption is not None and message.caption.strip() != "" and any(word in message.caption.lower() for word in words))):
+                if ((message.text is not None and message.text.strip() != "" and any(pattern.search(message.text) for pattern in patterns)) or 
+                    (message.caption is not None and message.caption.strip() != "" and any(pattern.search(message.caption) for pattern in patterns))):
 
                     table = doc.add_table(rows=1, cols=2)
                     for i, name in enumerate(["Номер", "Ссылка"]):

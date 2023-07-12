@@ -1,10 +1,11 @@
+import re
 from pyrogram import Client, filters
 from config import api_id, api_hash
 
 app = Client("my_account", api_id=api_id, api_hash=api_hash)
 
-with open('dictionary.txt') as f:
-    words = [word.strip().lower() for word in f.readlines()]
+with open('regex_patterns.txt') as f:
+    patterns = [re.compile(pattern.strip()) for pattern in f.readlines()]
 
 with open('channels.txt', 'r') as f:
     channels = [line.strip().lower() for line in f]
@@ -13,7 +14,7 @@ with open('channels.txt', 'r') as f:
 async def handle_channel_update(client, message):
     nomer = 1
     if message.chat.username in channels:
-        if (message.text and any(word in message.text.lower() for word in words)) or (message.caption and any(word in message.caption.lower() for word in words)):
+        if (message.text and any(pattern.search(message.text) for pattern in patterns)) or (message.caption and any(pattern.search(message.caption) for pattern in patterns)):
             print("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
             post_link = f"https://t.me/{message.chat.username}/{message.id}"
             print(f'Nomer: {nomer}')
