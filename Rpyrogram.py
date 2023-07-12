@@ -8,6 +8,8 @@ from docx.oxml.ns import nsdecls
 from docx.oxml import parse_xml
 import os
 import re
+import logging
+import sys
 from webdriver_manager.chrome import ChromeDriverManager
 from selenium import webdriver
 from selenium.webdriver.chrome.service import Service
@@ -17,11 +19,24 @@ from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.chrome.options import Options
 from config import api_id, api_hash
 
-with open('regex_patterns.txt') as f:
-    patterns = [re.compile(pattern.strip()) for pattern in f.readlines()]
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
+message_count = 0
 
-with open('channels.txt') as f:
-    channels = [channel.strip() for channel in f.readlines()]
+def read_patterns(file_name):
+    with open(file_name) as f:
+        return [re.compile(pattern.strip()) for pattern in f.readlines()]
+
+def read_channels(file_name):
+    with open(file_name, 'r') as f:
+        return [line.strip().lower() for line in f.readlines()]
+
+try:
+    patterns = read_patterns('regex_patterns.txt')
+    channels = read_channels('channels.txt')
+except Exception as e:
+    logger.error(f'Error reading files: {str(e)}')
+    sys.exit(1)
 
 filename = 'telegram_messages.docx'
 screenshot_path = "screen"
@@ -39,9 +54,9 @@ except:
 async def main():
     app = Client("my_account2", api_id=api_id, api_hash=api_hash)
     await app.start()
-    print("Bot started...")
+    logger.info("Программа запущена...")
     time_limit = 2
-    nomer = 1
+    global message_count
     for channel_name in channels:
         async for message in app.get_chat_history(channel_name):
             time_difference = datetime.now(timezone.utc) - message.date.astimezone(timezone.utc)
@@ -64,42 +79,45 @@ async def main():
 
                     print("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
                     # print(message)
-                    doc.add_paragraph(f'Nomer: {nomer}')
+                    message_count += 1
+                    doc.add_paragraph(f'Nomer: {message_count}')
                     doc.add_paragraph(f'Text: {message.text}')
                     doc.add_paragraph(f'Caption: {message.caption}')
                     doc.add_paragraph(f'Link: {post_link}')
 
                     cells = table.add_row().cells
-                    cells[0].text = str(nomer)
+                    cells[0].text = str(message_count)
                     cells[1].text = post_link
                     for cell in cells:
                         border_elm = parse_xml(border_str)
                         cell._element.get_or_add_tcPr().append(border_elm)
                     
 
-                    print(f'Link: {post_link}')
-                    print(f'Caption: {message.caption}')
-                    print(f'Text: {message.text}')
+                    logger.info(f'Nomer: {message_count}')
+                    logger.info(f"Новое сообщение в канале: {message.chat.title}")
+                    logger.info(f"Текст сообщения: {message.text}")
+                    logger.info(f'Caption: {message.caption}')
+                    logger.info(f'Link: {post_link}')
 
                     if message.photo:
-                        print("Есть фото")
+                        logger.info("Есть фото")
                         doc.add_paragraph('Есть фото')
                     else:
-                        print("Нет фото")
+                        logger.info("Нет фото")
                         doc.add_paragraph('Нет фото!!!!!!!!!!!!!!')
 
                     if message.video:
-                        print("Есть видео")
+                        logger.info("Есть видео")
                         doc.add_paragraph('Есть видео')
                     else:
-                        print("Нет видео")
+                        logger.info("Нет видео")
                         doc.add_paragraph('Нет видео!!!!!!!!!!!!!!')
 
                     if message.document:
-                        print("Есть прикрепленный документ")
+                        logger.info("Есть прикрепленный документ")
                         doc.add_paragraph('Есть прикрепленный документ')
                     else:
-                        print("Нет прикрепленного документа")
+                        logger.info("Нет прикрепленного документа")
                         doc.add_paragraph('Нет прикрепленного документа!!!!!!!!!!!!!!')
 
                     driver = webdriver.Chrome(service=webdriver_service, options=chrome_options)
@@ -109,14 +127,12 @@ async def main():
                     element = driver.find_element(By.CLASS_NAME, "tgme_page_widget")
                     ActionChains(driver).move_to_element(element).perform()
 
-                    screenshot_filename = screenshot_path + f'/screenshot_{nomer}.png'
+                    screenshot_filename = screenshot_path + f'/screenshot_{message_count}.png'
                     element.screenshot(screenshot_filename)
                     driver.quit()
                     doc.add_picture(screenshot_filename, width=Inches(5))
                     doc.save(filename)
                     os.remove(screenshot_filename)
-                    
-                    nomer += 1
             else:
                 break
     print("Ожидание завершения - 3 секунды")
