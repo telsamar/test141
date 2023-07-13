@@ -12,14 +12,20 @@ waiting_users = []
 authorized_users = [576891495, 374489044, 6104519444]
 markup_cache = None
 
-def generate_markup():
-    global markup_cache
-    if markup_cache is None:
-        keyboard = types.InlineKeyboardMarkup()
+def generate_markup(stage=None):
+    keyboard = types.InlineKeyboardMarkup()
+
+    if stage == 'run_script':
+        button_3 = types.InlineKeyboardButton(text="3", callback_data='3')
+        button_6 = types.InlineKeyboardButton(text="6", callback_data='6')
+        button_12 = types.InlineKeyboardButton(text="12", callback_data='12')
+        button_24 = types.InlineKeyboardButton(text="24", callback_data='24')
+        keyboard.add(button_3, button_6, button_12, button_24)
+    else:
         button_run_script = types.InlineKeyboardButton(text="Запустить Rpyrogram.py", callback_data='run_script')
         keyboard.add(button_run_script)
-        markup_cache = keyboard
-    return markup_cache
+
+    return keyboard
 
 @bot.message_handler(commands=['start'])
 def send_welcome(message):
@@ -32,7 +38,6 @@ def send_welcome(message):
 @bot.callback_query_handler(func=lambda call: True)
 def callback_query(call):
     global bot_is_busy, waiting_users
-
     if call.message.chat.id not in authorized_users:
         bot.answer_callback_query(call.id, 'Извините, вы не авторизованы для использования этого бота.')
         return
@@ -44,10 +49,13 @@ def callback_query(call):
                 waiting_users.append(call.message.chat.id)
             return
 
+        markup = generate_markup(stage='run_script')
+        bot.send_message(call.message.chat.id, 'Пожалуйста, выберите:', reply_markup=markup)
+    elif call.data in ['3', '6', '12', '24']:
         bot_is_busy = True
 
         try:
-            process = subprocess.Popen(['python3', 'Rpyrogram.py'], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+            process = subprocess.Popen(['python3', 'Rpyrogram.py', call.data], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
 
             dots = "."
             message = bot.send_message(call.message.chat.id, f"Скрипт начал работу{dots}")
@@ -67,7 +75,8 @@ def callback_query(call):
                 else:
                     bot.send_message(call.message.chat.id, "Скрипт завершил работу, но файл не найден")
 
-            bot.send_message(call.message.chat.id, "Бот снова свободен. Работаем дальше?", reply_markup=generate_markup())
+            markup = generate_markup()
+            bot.send_message(call.message.chat.id, "Бот снова свободен. Работаем дальше?", reply_markup=markup)
 
             for user in waiting_users:
                 bot.send_message(user, "Бот теперь свободен, вы можете начать новую задачу.")

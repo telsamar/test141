@@ -19,7 +19,9 @@ from config import api_id, api_hash
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 message_count = 0
-time_limit = 2
+if len(sys.argv) > 1:
+    time_limit = int(sys.argv[1])
+# time_limit = 2
 
 def read_patterns(file_name):
     with open(file_name) as f:
@@ -54,6 +56,8 @@ async def main():
     app = Client("my_account2", api_id=api_id, api_hash=api_hash)
     await app.start()
     logger.info("Программа запущена...")
+    doc.add_paragraph(f'time_limit: {time_limit}')
+    doc.save(filename)
     global message_count
     for channel_name in channels:
         async for message in app.get_chat_history(channel_name):
