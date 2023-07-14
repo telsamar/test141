@@ -79,7 +79,7 @@ def callback_query(call):
             bot.send_message(call.message.chat.id, "Бот снова свободен. Работаем дальше?", reply_markup=markup)
 
             for user in waiting_users:
-                bot.send_message(user, "Бот теперь свободен, вы можете начать новую задачу.")
+                bot.send_message(user, "Бот теперь свободен, вы можете начать новую задачу.", reply_markup=markup)
             waiting_users = []
 
         except Exception as e:
