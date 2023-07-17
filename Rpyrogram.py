@@ -21,7 +21,7 @@ logger = logging.getLogger(__name__)
 message_count = 0
 if len(sys.argv) > 1:
     time_limit = int(sys.argv[1])
-# time_limit = 2
+time_limit = 2
 
 def read_patterns(file_name):
     with open(file_name) as f:
@@ -34,6 +34,7 @@ def read_channels(file_name):
 try:
     patterns = read_patterns('regex_patterns.txt')
     channels = read_channels('channels.txt')
+    print(patterns)
 except Exception as e:
     logger.error(f'Error reading files: {str(e)}')
     sys.exit(1)
