@@ -3,13 +3,12 @@ from telebot import types
 import os
 import subprocess
 import time
-from config import api_bot
+from config import api_bot, authorized_users
 
 bot = telebot.TeleBot(api_bot)
 
 bot_is_busy = False
 waiting_users = []
-authorized_users = [576891495, 374489044, 6104519444]
 markup_cache = None
 
 def generate_markup(stage=None):
