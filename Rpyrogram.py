@@ -21,7 +21,7 @@ logger = logging.getLogger(__name__)
 message_count = 0
 if len(sys.argv) > 1:
     time_limit = int(sys.argv[1])
-time_limit = 2
+# time_limit = 2
 
 def read_patterns(file_name):
     with open(file_name) as f:
@@ -65,7 +65,7 @@ async def main():
             # print(message.chat.id)
             time_difference = datetime.now(timezone.utc) - message.date.astimezone(timezone.utc)
             time_difference_seconds = time_difference.total_seconds()
-            if time_difference_seconds < time_limit*3600:
+            if time_difference_seconds < time_limit * 3600:
                 post_link = f"https://t.me/{channel_name}/{message.id}"  
     
                 if ((message.text is not None and message.text.strip() != "" and any(pattern.search(message.text) for pattern in patterns)) or 
@@ -81,7 +81,7 @@ async def main():
                         border_elm = parse_xml(border_str)
                         cell._element.get_or_add_tcPr().append(border_elm)
 
-                    print("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
+                    # print("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
                     message_count += 1
                     doc.add_paragraph(f'Nomer: {message_count}')
                     doc.add_paragraph(f'Text: {message.text}')

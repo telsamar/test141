@@ -41,13 +41,18 @@ def callback_query(call):
         bot.answer_callback_query(call.id, 'Извините, вы не авторизованы для использования этого бота.')
         return
 
-    if call.data == 'run_script':
-        if bot_is_busy:
-            bot.answer_callback_query(call.id, "Бот сейчас занят, попробуйте позже")
-            if call.message.chat.id not in waiting_users:
-                waiting_users.append(call.message.chat.id)
-            return
+    if bot_is_busy:
+        bot.answer_callback_query(call.id, "Бот сейчас занят, попробуйте позже")
+        if call.message.chat.id not in waiting_users:
+            waiting_users.append(call.message.chat.id)
+        return
 
+    if call.data == 'run_script':
+        # if bot_is_busy:
+        #     bot.answer_callback_query(call.id, "Бот сейчас занят, попробуйте позже")
+        #     if call.message.chat.id not in waiting_users:
+        #         waiting_users.append(call.message.chat.id)
+        #     return
         markup = generate_markup(stage='run_script')
         bot.send_message(call.message.chat.id, 'Пожалуйста, выберите:', reply_markup=markup)
     elif call.data in ['3', '6', '12', '24']:
@@ -87,4 +92,4 @@ def callback_query(call):
         finally:
             bot_is_busy = False
 
-bot.polling()
+bot.infinity_polling()
